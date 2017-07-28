@@ -49,10 +49,16 @@ Create a new folder and initialize an NPM project:
 > npm init -f
 ```
 
+Add line to package.json devDependencies:
+
+```json
+    "angular-librarian": "git+ssh://git@github.com:jhwegener/angular-librarian.git"
+```
+
 Install this package to your project:
 
 ```shell
-> npm i -D angular-librarian
+> npm i angular-librarian
 ```
 
 The following command (`ngl`) is not available out of the box. To set it up, see

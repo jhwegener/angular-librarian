@@ -2,18 +2,18 @@
 
 ## How to Contribute
 
-1. [Fork the repo](https://github.com/gonzofish/angular-librarian/fork)
+1. [Fork the repo](https://github.com/jhwegener/angular-librarian/fork)
 2. Create a branch in your repo with a descriptive name (ie, if you were fixing
     and issue with unit test performance, `test-performance` would be
     descriptive enough)
 3. Code your fix
-4. [Create a pull request](https://github.com/gonzofish/angular-librarian/compare)
+4. [Create a pull request](https://github.com/jhwegener/angular-librarian/compare)
 5. Await response from the maintainers!
 
 ## The Codebase
 
 Angular Librarian is powered by the
-[`erector-set` library](https://github.com/gonzofish/erector-set). Erector Set
+[`erector-set` library](https://github.com/jhwegener/erector-set). Erector Set
 provides a small interface to create scaffolding applications, like Angular
 Librarian.
 
@@ -42,4 +42,4 @@ command's directory. The only exception is the `upgrade` command which pulls
 its templates with from the `initial` command's `templates` directory.
 
 For more assistance, feel free to [create an issue with
-`[CONTRIBUTING]`](https://github.com/gonzofish/angular-librarian/issues/new?title=[CONTRIBUTING]%20) in the title.
+`[CONTRIBUTING]`](https://github.com/jhwegener/angular-librarian/issues/new?title=[CONTRIBUTING]%20) in the title.

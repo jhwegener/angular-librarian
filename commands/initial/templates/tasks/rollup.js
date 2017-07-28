@@ -7,48 +7,43 @@ const path = require('path');
 const rollup = require('rollup');
 const rollupSourcemaps = require('rollup-plugin-sourcemaps');
 const rollupUglify = require('rollup-plugin-uglify');
+const resolve = require('rollup-plugin-node-resolve');
+const commonjs = require('rollup-plugin-commonjs');
+
+
+const globals = {
+    '@angular/core': 'ng.core',
+    '@angular/common': 'ng.common',
+    '@angular/compiler': 'ng.compiler',
+    '@angular/platform-browser': 'ng.platformBrowser',
+    'rxjs/Observable': 'Rx',
+    'rxjs/ReplaySubject': 'Rx',
+    'rxjs/add/operator/map': 'Rx.Observable.prototype',
+    'rxjs/add/operator/mergeMap': 'Rx.Observable.prototype',
+    'rxjs/add/observable/fromEvent': 'Rx.Observable',
+    'rxjs/add/observable/of': 'Rx.Observable',
+};
 
 const doRollup = (libName, dirs) => {
-    const es5Entry = path.resolve(dirs.es5, `${ libName }.js`);
-    const es2015Entry = path.resolve(dirs.es2015, `${ libName }.js`);
+    const es5Entry = path.resolve(dirs.dist, `index.js`);
     const baseConfig = generateConfig({
         entry: es5Entry,
-        external: [
-            '@angular/common',
-            '@angular/core'
-        ],
-        globals: {
-            '@angular/common': 'ng.common',
-            '@angular/core': 'ng.core'
-        },
-        moduleName: librarianUtils.dashToCamel(libName),
-        plugins: [ rollupSourcemaps() ],
-        sourceMap: true
-    }, dirs.root);
-    const fesm2015Config = Object.assign({}, baseConfig, {
-        entry: es2015Entry,
-        dest: path.join(dirs.dist, `${ libName }.js`),
-        format: 'es'
-    });
-    const fesm5Config = Object.assign({}, baseConfig, {
-        dest: path.join(dirs.dist, `${ libName }.es5.js`),
-        format: 'es'
-    });
-    const miniUmdConfig = Object.assign({}, baseConfig, {
-        dest: path.join(dirs.dist, 'bundles', `${ libName }.umd.min.js`),
+        dest: 'dist/bundles/ngdeepmap.umd.js',
+        sourceMap: true,
         format: 'umd',
-        plugins: baseConfig.plugins.concat([rollupUglify({})])
-    });
-    const umdConfig = Object.assign({}, baseConfig, {
-        dest: path.join(dirs.dist, 'bundles', `${ libName }.umd.js`),
-        format: 'umd'
-    });
+        moduleName: librarianUtils.dashToCamel(libName),
+        plugins: [
+            rollupSourcemaps(),
+            resolve({jsnext: true, main: true}),
+            commonjs(),
+        ],
+        external: Object.keys(globals),
+        globals: globals
+    }, dirs.root);
+    const hdmiConfig = Object.assign({}, baseConfig, {});
 
     const bundles = [
-        fesm2015Config,
-        fesm5Config,
-        miniUmdConfig,
-        umdConfig
+        hdmiConfig
     ].map((config) =>
         rollup.rollup(config).then((bundle) =>
             bundle.write(config)
@@ -58,15 +53,16 @@ const doRollup = (libName, dirs) => {
     return Promise.all(bundles);
 };
 const generateConfig = (base, rootDir) => {
-    const customLocation = path.resolve(rootDir, 'configs', 'rollup.config.js');
-
-    if (fs.existsSync(customLocation)) {
-        const custom = require(customLocation);
-        const external = (custom.external || []).filter((external) => base.external.indexOf(external) === -1);
-
-        base.external = base.external.concat(external);
-        base.globals = erectorUtils.mergeDeep(custom.globals, base.globals);
-    }
+    // const customLocation = path.resolve(rootDir, 'configs', 'rollup.config.js');
+    //
+    // if (fs.existsSync(customLocation)) {
+    //     const custom = require(customLocation);
+    //     const external = (custom.external || []).filter((external) => base.external.indexOf(external) === -1);
+    //
+    //     base.external = base.external.concat(external);
+    //     base.globals = erectorUtils.mergeDeep(custom.globals, base.globals);
+    //     base.plugins = erectorUtils.mergeDeep(custom.plugins, base.plugins);
+    // }
 
     return base;
 };

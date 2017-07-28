@@ -43,14 +43,11 @@ const complete = (depth = 2) => {
     const spaces = ' '.repeat(depth);
     console.info(colorize(`${ spaces }> Complete`, 'green'));
 };
-const compileCode = () => Promise.all([2015, 5].map((type) =>
-    ngc({ project: path.resolve(rootDir, `tsconfig.es${ type }.json`)})
+const compileCode = () =>
+    ngc({ project: path.resolve(rootDir, `tsconfig-build.json`)})
         .then((exitCode) =>
             exitCode === 0 ? Promise.resolve() : Promise.reject()
-        )
-));
-const copyMetadata = () =>
-    copyGlobs(['**/*.d.ts', '**/*.metadata.json'], es2015Dir, distDir);
+        );
 const copyPackageFiles = () =>
     copyGlobs(['.npmignore', 'package.json', 'README.md'], rootDir, distDir)
         .then(() => {
@@ -62,8 +59,6 @@ const copySource = () => copyGlobs('**/*', srcDir, buildDir);
 const doInlining = () => inlineResources(buildDir, 'src');
 const rollupBundles = () => rollup(libName, {
     dist: distDir,
-    es2015: es2015Dir,
-    es5: es5Dir,
     root: rootDir
 });
 
@@ -71,7 +66,6 @@ return Promise.resolve()
     .then(runPromise('Copying `src` files into `build`', copySource))
     .then(runPromise('Inlining resources', doInlining))
     .then(runPromise('Compiling code', compileCode))
-    .then(runPromise('Copying typings + metadata to `dist`', copyMetadata))
     .then(runPromise('Generating bundles via rollup', rollupBundles))
     .then(runPromise('Copying package files to `dist`', copyPackageFiles))
     .catch((error) => {

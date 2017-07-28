@@ -39,7 +39,7 @@ const colorize = (text, color) => {
     return `\x1b[${ color }m${ text }\x1b[${ colorMap.reset }m`;
 };
 
-const complete = (depth = 2) => {
+const complete = (depth = 0) => {
     const spaces = ' '.repeat(depth);
     console.info(colorize(`${ spaces }> Complete`, 'green'));
 };
@@ -53,7 +53,7 @@ const copyPackageFiles = () =>
         .then(() => {
             const contents = fs.readFileSync(path.resolve(distDir, 'package.json'), 'utf8');
 
-            return fs.writeFileSync(path.resolve(distDir, 'package.json'),  contents.replace('node ./tasks/test', 'node ../tasks/test'));
+            return fs.writeFileSync(path.resolve(distDir, 'package.json'),  contents.replace('"dependencies":', '"peerDependencies":'));
         });
 const copySource = () => copyGlobs('**/*', srcDir, buildDir);
 const doInlining = () => inlineResources(buildDir, 'src');

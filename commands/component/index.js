@@ -5,17 +5,21 @@ const path = require('path');
 const utilities = require('../utilities');
 
 module.exports = function createComponent(rootDir, selector) {
-    const templates = getTemplates(rootDir);
-    const options = utilities.parseOptions(Array.from(arguments).slice(2), [
+    const options = utilities.parseOptions(Array.from(arguments).slice(selector && selector[0] !== '-' ? 2 : 1), [
         'd',
         'defaults',
-        'hooks',
+        'example',
+        'examples',
         'h',
+        'hooks',
         'inline-styles',
         'inline-template',
         'is',
-        'it'
-    ]);;
+        'it',
+        'x'
+    ]);
+    const forExamples = utilities.checkIsForExamples(options);
+    const templates = getTemplates(rootDir, forExamples);
     const remaining = getRemainingQuestions(selector, options);
     const knownAnswers = remaining.answers;
     const questions = remaining.questions.reduce((all, method) => all.concat(method(knownAnswers)), []);
@@ -23,15 +27,9 @@ module.exports = function createComponent(rootDir, selector) {
     erector.inquire(questions).then((answers) => {
         const allAnswers = knownAnswers.concat(answers);
 
-        erector.construct(allAnswers, templates, true);
-        notifyUser(allAnswers);
+        erector.construct(allAnswers, templates);
+        notifyUser(allAnswers, forExamples);
     });
-
-    // if (utilities.checkIsDashFormat(selector)) {
-        // createWithKnownSelector(selector, templates, options);
-    // } else {
-        // createWithMissingSelector(templates, options);
-    // }
 };
 
 const getRemainingQuestions = (selectorName, options) => {
@@ -51,21 +49,6 @@ const getRemainingQuestions = (selectorName, options) => {
 
         return groups;
     }, { answers: [], questions: []});
-};
-
-const createWithKnownSelector = (selector, templates, options) => {
-    const knownAnswers = [
-        { answer: selector, name: 'selector' },
-        { answer: utilities.dashToCap(selector) + 'Component', name: 'componentName' }
-    ];
-    const questions = getComponentOptionQuestions(knownAnswers);
-
-    erector.inquire(questions).then((answers) => {
-        const allAnswers = knownAnswers.concat(answers);
-
-        erector.construct(allAnswers, templates, true);
-        notifyUser(allAnswers);
-    });
 };
 
 const getKnownSelector = (selector) => {
@@ -267,8 +250,9 @@ const setLifecycleMethods = (value) => {
     return methods;
 };
 
-const getTemplates = (rootDir) => {
-    const componentDir = path.resolve(rootDir, 'src', '{{ selector }}');
+const getTemplates = (rootDir, forExamples) => {
+    const codeDir = forExamples ? 'examples' : 'src';
+    const componentDir = path.resolve(rootDir, codeDir, '{{ selector }}');
 
     return utilities.getTemplates(rootDir, __dirname, [
         {
@@ -300,11 +284,12 @@ const checkIsInline = (answers, type) => {
     return answer.answer === '``';
 }
 
-const notifyUser = (answers) => {
+const notifyUser = (answers, forExamples) => {
     const componentName = answers.find((answer) => answer.name === 'componentName');
+    const moduleLocation = forExamples ? 'examples/example' : 'src/*';
     const selector = answers.find((answer) => answer.name === 'selector');
 
-    console.info(`\nDon't forget to add the following to the module.ts file:`);
+    console.info(`\nDon't forget to add the following to the ${ moduleLocation }.module.ts file:`);
     console.info(`    import { ${componentName.answer} } from './${selector.answer}/${selector.answer}.component';`);
     console.info(`And to add ${componentName.answer} to the NgModule declarations list`);
 };
